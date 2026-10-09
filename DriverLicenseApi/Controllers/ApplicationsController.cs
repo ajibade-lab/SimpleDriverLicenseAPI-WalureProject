@@ -21,12 +21,18 @@ namespace DriverLicenseApi.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Applicant")]
-        public async Task<IActionResult> Create([FromBody] CreateApplicationDTO dto)
+        public async Task<IActionResult> Create([FromBody] CreateApplicationDTO model)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var result = await _service.CreateApplicationAsync(userId, dto);
+            if (string.IsNullOrEmpty(userIdString)) 
+                return Unauthorized();
+
+            if (!Guid.TryParse(userIdString, out var userId))
+                return Unauthorized();
+
+            var result = await _service.CreateApplicationAsync(userId, model);
+
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
 
@@ -34,24 +40,35 @@ namespace DriverLicenseApi.Controllers
         [Authorize(Roles = "Applicant")]
         public async Task<IActionResult> GetMyApplication()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userIdString)) 
+                return Unauthorized();
+
+            if (!Guid.TryParse(userIdString, out var userId))
+                return Unauthorized();
 
             var app = await _service.GetUserApplicationAsync(userId);
-            if (app == null) return NotFound(new { Message = "No application found for this account." });
+
+            if (app == null) 
+                return NotFound(new { Message = "No application found for this account." });
+            
             return Ok(app);
         }
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+                
+        [HttpGet("{Guid}")]
+        public async Task<IActionResult> GetById(Guid id)
         {
             var app = await _service.GetByIdAsync(id);
-            if (app == null) return NotFound(new { Message = "Application not found." });
+
+            if (app == null) 
+                return NotFound(new { Message = "Application not found." });
+
             return Ok(app);
         }
 
-        [HttpGet("{id}/history")]
-        public async Task<IActionResult> GetHistory(int id)
+        [HttpGet("{Guid}/history")]
+        public async Task<IActionResult> GetHistory(Guid id)
         {
             var history = await _service.GetHistoryAsync(id);
             return Ok(history);

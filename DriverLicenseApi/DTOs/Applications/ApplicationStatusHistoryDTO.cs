@@ -1,8 +1,8 @@
 ﻿namespace DriverLicenseApi.DTOs.Applications
 {
-    public class ApplicationStatusHistoryDto
+    public class ApplicationStatusHistoryDTO
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string Status { get; set; } = string.Empty;
         public string Comment { get; set; } = string.Empty;
         public DateTime DateChanged { get; set; }

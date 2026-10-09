@@ -1,8 +1,8 @@
 ﻿namespace DriverLicenseApi.DTOs.Applications
 {
-    public class ApplicationResponseDto
+    public class ApplicationResponseDTO
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string ApplicationNumber { get; set; } = string.Empty;
         public string ApplicantName { get; set; } = string.Empty;
         public string ApplicantEmail { get; set; } = string.Empty;
@@ -16,6 +16,6 @@
         public DateTime LastUpdated { get; set; }
         public DateTime? CollectionDate { get; set; }
         public string? RejectionReason { get; set; }
-        public List<ApplicationStatusHistoryDto> StatusHistory { get; set; } = new();
+        public List<ApplicationStatusHistoryDTO> StatusHistory { get; set; } = new();
     }
 }

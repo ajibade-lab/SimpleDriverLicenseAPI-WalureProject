@@ -1,4 +1,3 @@
-
 using DriverLicenseApi.Data;
 using DriverLicenseApi.IServices;
 using DriverLicenseApi.Middleware;
@@ -23,14 +22,70 @@ namespace DriverLicenseApi
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddControllers();
+            builder.Services.AddOpenApi();
+
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1", new OpenApiInfo { Title = "Driver License API", Version = "v1" });
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\". Enter your JWT token."
+                });
+
+                options.AddSecurityRequirement(document =>
+                    new OpenApiSecurityRequirement
+                    {
+                        [new OpenApiSecuritySchemeReference("Bearer", document)] =
+                            new List<string>()
+                    });
+            });
+
             builder.Services.AddDbContext<ApplicationDbContext>(
                 options => options.UseSqlServer(
                     builder.Configuration.GetConnectionString("DefaultConnection"))
                 );
 
-            builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(x =>
+            {
+                x.Password.RequiredLength = 6;
+                x.Password.RequireDigit = true;
+                x.Password.RequireLowercase = true;
+                x.Password.RequireUppercase = true;
+                x.Password.RequireNonAlphanumeric = true;
+            })
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
+
+            var jwtSecret = builder.Configuration["Jwt:Key"];
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+                .AddJwtBearer(options =>
+                {
+                    options.SaveToken = true;
+                    options.RequireHttpsMetadata = false;
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+
+                        ValidAudience = builder.Configuration["Jwt:Audience"],
+                        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret!))
+                    };
+                });
+
 
             var connectionString =
                 builder.Configuration.GetConnectionString("DefaultConnection");
@@ -64,67 +119,15 @@ namespace DriverLicenseApi
 
             builder.Host.UseSerilog();
             
-
-            builder.Services.AddControllers();
-            builder.Services.AddOpenApi();                      
-
-            
-            var jwtSecret = builder.Configuration["JWT:Secret"];
-            builder.Services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-                .AddJwtBearer(options =>
-            {
-                options.SaveToken = true;
-                options.RequireHttpsMetadata = false;
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidAudience = builder.Configuration["JWT:ValidAudience"],
-                    ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret!))
-                };
-            });
-
             builder.Services.AddHttpClient<IExternalVerificationService, ExternalVerificationService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<ILicenseApplicationService, LicenseApplicationService>();
             
-            builder.Services.AddSwaggerGen(options =>
-            {
-                options.SwaggerDoc("v1", new OpenApiInfo { Title = "Driver License API", Version = "v1" });
-                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                {
-                    Name = "Authorization",
-                    Type = SecuritySchemeType.Http,
-                    Scheme = "Bearer",
-                    BearerFormat = "JWT",
-                    In = ParameterLocation.Header,
-                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\". Enter your JWT token."
-                });
-
-                options.AddSecurityRequirement(document =>
-                    new OpenApiSecurityRequirement
-                    {
-                        [new OpenApiSecuritySchemeReference("Bearer", document)] =
-                            new List<string>()
-                    });
-            });
 
             builder.Services.AddEndpointsApiExplorer();
 
             var app = builder.Build();
 
-            using (var scope = app.Services.CreateScope())
-            {
-                var services = scope.ServiceProvider;
-                var context = services.GetRequiredService<ApplicationDbContext>();
-                context.Database.Migrate();
-                await DbSeeder.SeedRolesAndUsersAsync(services);
-            }
 
             app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
@@ -139,6 +142,14 @@ namespace DriverLicenseApi
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                var context = services.GetRequiredService<ApplicationDbContext>();
+                context.Database.Migrate();
+                await DbSeeder.SeedRolesAndUsersAsync(services);
+            }
 
             app.Run();
         }

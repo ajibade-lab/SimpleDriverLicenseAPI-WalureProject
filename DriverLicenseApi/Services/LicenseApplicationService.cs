@@ -22,7 +22,7 @@ namespace DriverLicenseApi.Services
             _logger = logger;
         }
 
-        public async Task<ApplicationResponseDto> CreateApplicationAsync(string userId, CreateApplicationDTO dto)
+        public async Task<ApplicationResponseDTO> CreateApplicationAsync(Guid userId, CreateApplicationDTO dto)
         {
             var user = await _context.Users.FindAsync(userId);
             if (user == null) throw new InvalidOperationException("User not found.");
@@ -62,7 +62,7 @@ namespace DriverLicenseApi.Services
             return MapToDto(application, user.FullName, user.Email!);
         }
 
-        public async Task<ApplicationResponseDto?> GetUserApplicationAsync(string userId)
+        public async Task<ApplicationResponseDTO?> GetUserApplicationAsync(Guid userId)
         {
             var app = await _context.LicenseApplications
                 .Include(a => a.User)
@@ -74,7 +74,7 @@ namespace DriverLicenseApi.Services
             return app == null ? null : MapToDto(app, app.User?.FullName ?? "", app.User?.Email ?? "");
         }
 
-        public async Task<ApplicationResponseDto?> GetByIdAsync(int id)
+        public async Task<ApplicationResponseDTO?> GetByIdAsync(Guid id)
         {
             var app = await _context.LicenseApplications
                 .Include(a => a.User)
@@ -84,7 +84,7 @@ namespace DriverLicenseApi.Services
             return app == null ? null : MapToDto(app, app.User?.FullName ?? "", app.User?.Email ?? "");
         }
 
-        public async Task<List<ApplicationResponseDto>> GetAllApplicationsAsync(ApplicationStatus? statusFilter, string? sortBy)
+        public async Task<List<ApplicationResponseDTO>> GetAllApplicationsAsync(ApplicationStatus? statusFilter, string? sortBy)
         {
             var query = _context.LicenseApplications
                 .Include(a => a.User)
@@ -111,7 +111,7 @@ namespace DriverLicenseApi.Services
             return applications.Select(a => MapToDto(a, a.User?.FullName ?? "", a.User?.Email ?? "")).ToList();
         }
 
-        public async Task<ApplicationResponseDto?> UpdateStatusAsync(int id, ApplicationStatus newStatus, string comment, string changedBy)
+        public async Task<ApplicationResponseDTO?> UpdateStatusAsync(Guid id, ApplicationStatus newStatus, string comment, string changedBy)
         {
             var app = await _context.LicenseApplications
                 .Include(a => a.User)
@@ -132,10 +132,11 @@ namespace DriverLicenseApi.Services
             });
 
             await _context.SaveChangesAsync();
+
             return MapToDto(app, app.User?.FullName ?? "", app.User?.Email ?? "");
         }
 
-        public async Task<ApplicationResponseDto?> RejectApplicationAsync(int id, string reason, string changedBy)
+        public async Task<ApplicationResponseDTO?> RejectApplicationAsync(Guid id, string reason, string changedBy)
         {
             var app = await _context.LicenseApplications
                 .Include(a => a.User)
@@ -157,10 +158,11 @@ namespace DriverLicenseApi.Services
             });
 
             await _context.SaveChangesAsync();
+
             return MapToDto(app, app.User?.FullName ?? "", app.User?.Email ?? "");
         }
 
-        public async Task<ApplicationResponseDto?> MarkAsCollectedAsync(int id, string changedBy)
+        public async Task<ApplicationResponseDTO?> MarkAsCollectedAsync(Guid id, string changedBy)
         {
             var app = await _context.LicenseApplications
                 .Include(a => a.User)
@@ -182,15 +184,16 @@ namespace DriverLicenseApi.Services
             });
 
             await _context.SaveChangesAsync();
+
             return MapToDto(app, app.User?.FullName ?? "", app.User?.Email ?? "");
         }
 
-        public async Task<List<ApplicationStatusHistoryDto>> GetHistoryAsync(int id)
+        public async Task<List<ApplicationStatusHistoryDTO>> GetHistoryAsync(Guid id)
         {
             return await _context.ApplicationStatusHistories
                 .Where(h => h.LicenseApplicationId == id)
                 .OrderBy(h => h.DateChanged)
-                .Select(h => new ApplicationStatusHistoryDto
+                .Select(h => new ApplicationStatusHistoryDTO
                 {
                     Id = h.Id,
                     Status = h.Status.ToString(),
@@ -217,7 +220,7 @@ namespace DriverLicenseApi.Services
             };
         }
 
-        private static ApplicationResponseDto MapToDto(LicenseApplication app, string fullName, string email)
+        private static ApplicationResponseDTO MapToDto(LicenseApplication app, string fullName, string email)
         {
             string message = app.Status switch
             {
@@ -231,7 +234,7 @@ namespace DriverLicenseApi.Services
                 _ => "Status updated."
             };
 
-            return new ApplicationResponseDto
+            return new ApplicationResponseDTO
             {
                 Id = app.Id,
                 ApplicationNumber = app.ApplicationNumber,
@@ -247,7 +250,7 @@ namespace DriverLicenseApi.Services
                 LastUpdated = app.LastUpdated,
                 CollectionDate = app.CollectionDate,
                 RejectionReason = app.RejectionReason,
-                StatusHistory = app.StatusHistories.Select(h => new ApplicationStatusHistoryDto
+                StatusHistory = app.StatusHistories.Select(h => new ApplicationStatusHistoryDTO
                 {
                     Id = h.Id,
                     Status = h.Status.ToString(),

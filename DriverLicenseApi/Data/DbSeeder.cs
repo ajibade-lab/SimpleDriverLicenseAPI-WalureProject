@@ -1,4 +1,4 @@
-﻿using DriverLicenseApi.Models;
+﻿ using DriverLicenseApi.Models;
 using Microsoft.AspNetCore.Identity;
 
 namespace DriverLicenseApi.Data
@@ -7,7 +7,7 @@ namespace DriverLicenseApi.Data
     {
         public static async Task SeedRolesAndUsersAsync(IServiceProvider serviceProvider)
         {
-            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
             var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
             string[] roles = { "Applicant", "Staff", "Admin" };
@@ -16,9 +16,9 @@ namespace DriverLicenseApi.Data
             {
                 if (!await roleManager.RoleExistsAsync(role))
                 {
-                    await roleManager.CreateAsync(new IdentityRole(role));
+                    await roleManager.CreateAsync(new IdentityRole<Guid>(role));
                 }
-            }
+            } 
 
             // Seed default Staff User
             var staffEmail = "staff@license.gov";

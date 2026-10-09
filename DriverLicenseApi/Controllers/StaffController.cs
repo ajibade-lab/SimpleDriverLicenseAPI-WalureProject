@@ -19,7 +19,8 @@ namespace DriverLicenseApi.Controllers
         {
             _service = service;
         }
-                                   
+                        
+        
         [HttpGet("applications")]
         public async Task<IActionResult> GetAll([FromQuery] ApplicationStatus? status, [FromQuery] string? sortBy)
         {
@@ -27,32 +28,45 @@ namespace DriverLicenseApi.Controllers
             return Ok(apps);
         }
 
-        [HttpPut("applications/{id}/status")]
-        public async Task<IActionResult> UpdateStatus(int id, [FromBody] UpdateStatusDTO dto)
+
+        [HttpPut("applications/{Guid}/status")]
+        public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateStatusDTO model)
         {
             var staffName = User.FindFirstValue(ClaimTypes.Name) ?? "Staff Member";
-            var result = await _service.UpdateStatusAsync(id, dto.Status, dto.Comment, staffName);
-            if (result == null) return NotFound(new { Message = "Application not found." });
+            var result = await _service.UpdateStatusAsync(id, model.Status, model.Comment, staffName);
+
+            if (result == null) 
+                return NotFound(new { Message = "Application not found." });
+
             return Ok(result);
         }
 
-        [HttpPut("applications/{id}/reject")]
-        public async Task<IActionResult> Reject(int id, [FromBody] RejectApplicationDTO dto)
+
+        [HttpPut("applications/{Guid}/reject")]
+        public async Task<IActionResult> Reject(Guid id, [FromBody] RejectApplicationDTO model)
         {
             var staffName = User.FindFirstValue(ClaimTypes.Name) ?? "Staff Member";
-            var result = await _service.RejectApplicationAsync(id, dto.Reason, staffName);
-            if (result == null) return NotFound(new { Message = "Application not found." });
+            var result = await _service.RejectApplicationAsync(id, model.Reason, staffName);
+
+            if (result == null) 
+                return NotFound(new { Message = "Application not found." });
+
             return Ok(result);
         }
 
-        [HttpPut("applications/{id}/collect")]
-        public async Task<IActionResult> Collect(int id)
+
+        [HttpPut("applications/{Guid}/collect")]
+        public async Task<IActionResult> Collect(Guid id)
         {
             var staffName = User.FindFirstValue(ClaimTypes.Name) ?? "Staff Member";
             var result = await _service.MarkAsCollectedAsync(id, staffName);
-            if (result == null) return NotFound(new { Message = "Application not found." });
+
+            if (result == null) 
+                return NotFound(new { Message = "Application not found." });
+
             return Ok(result);
         }
+
 
         [HttpGet("dashboard")]
         public async Task<IActionResult> GetDashboard()

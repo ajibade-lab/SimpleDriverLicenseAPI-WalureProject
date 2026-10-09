@@ -2,11 +2,11 @@
 {
     public class LicenseApplication
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string ApplicationNumber { get; set; } = string.Empty;
 
         // Foreign Key to ApplicationUser
-        public string UserId { get; set; } = string.Empty;
+        public Guid UserId { get; set; }
         public ApplicationUser? User { get; set; }
 
         public DateTime DateOfBirth { get; set; }

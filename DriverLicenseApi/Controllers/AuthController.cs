@@ -1,5 +1,6 @@
 ﻿using DriverLicenseApi.DTOs.User;
 using DriverLicenseApi.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,19 +17,27 @@ namespace DriverLicenseApi.Controllers
             _authService = authService;
         }
 
+        [AllowAnonymous]
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDTO dto)
+        public async Task<IActionResult> Register([FromBody] RegisterDTO model)
         {
-            var result = await _authService.RegisterAsync(dto);
-            if (!result.Succeeded) return BadRequest(new { Message = result.Message });
+            var result = await _authService.RegisterAsync(model);
+
+            if (!result.Succeeded) 
+                return BadRequest(new { Message = result.Message });
+
             return Ok(result.Data);
         }
 
+        [AllowAnonymous]
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDTO dto)
+        public async Task<IActionResult> Login([FromBody] LoginDTO model)
         {
-            var result = await _authService.LoginAsync(dto);
-            if (!result.Succeeded) return Unauthorized(new { Message = result.Message });
+            var result = await _authService.LoginAsync(model);
+
+            if (!result.Succeeded) 
+                return Unauthorized(new { Message = result.Message });
+
             return Ok(result.Data);
         }
     }

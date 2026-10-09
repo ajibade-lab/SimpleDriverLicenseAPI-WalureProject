@@ -2,8 +2,8 @@
 {
     public class ApplicationStatusHistory
     {
-        public int Id { get; set; }
-        public int LicenseApplicationId { get; set; }
+        public Guid Id { get; set; }
+        public Guid LicenseApplicationId { get; set; }
         public LicenseApplication? LicenseApplication { get; set; }
 
         public ApplicationStatus Status { get; set; }

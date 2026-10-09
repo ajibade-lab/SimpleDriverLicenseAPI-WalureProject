@@ -13,6 +13,7 @@ namespace DriverLicenseApi.Middleware
             _next = next;
             _logger = logger;
         }
+
         public async Task InvokeAsync(HttpContext context)
         {
             try

@@ -147,7 +147,7 @@ namespace DriverLicenseApi
             {
                 var services = scope.ServiceProvider;
                 var context = services.GetRequiredService<ApplicationDbContext>();
-                context.Database.Migrate();
+                //context.Database.Migrate();
                 await DbSeeder.SeedRolesAndUsersAsync(services);
             }
 

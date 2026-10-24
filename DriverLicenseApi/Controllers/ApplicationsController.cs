@@ -29,7 +29,7 @@ namespace DriverLicenseApi.Controllers
                 return Unauthorized();
 
             if (!Guid.TryParse(userIdString, out var userId))
-                return Unauthorized();
+                return Unauthorized(); 
 
             var result = await _service.CreateApplicationAsync(userId, model);
 
@@ -43,7 +43,7 @@ namespace DriverLicenseApi.Controllers
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (string.IsNullOrEmpty(userIdString)) 
-                return Unauthorized();
+                return Unauthorized(); 
 
             if (!Guid.TryParse(userIdString, out var userId))
                 return Unauthorized();

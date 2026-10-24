@@ -12,7 +12,7 @@
         public DateTime DateOfBirth { get; set; }
         public string Address { get; set; } = string.Empty;
         public string PhoneNumber { get; set; } = string.Empty;
-        public string LicenseType { get; set; } = "Standard"; // e.g., Standard, Heavy
+        public string LicenseType { get; set; } = string.Empty; // e.g., Standard, Heavy
 
         public ApplicationStatus Status { get; set; } = ApplicationStatus.Submitted;
         public DateTime SubmittedDate { get; set; } = DateTime.UtcNow;

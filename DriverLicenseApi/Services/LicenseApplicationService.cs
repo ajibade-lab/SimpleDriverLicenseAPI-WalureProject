@@ -25,7 +25,9 @@ namespace DriverLicenseApi.Services
         public async Task<ApplicationResponseDTO> CreateApplicationAsync(Guid userId, CreateApplicationDTO dto)
         {
             var user = await _context.Users.FindAsync(userId);
-            if (user == null) throw new InvalidOperationException("User not found.");
+
+            if (user == null) 
+                throw new InvalidOperationException("User not found.");
 
             // Optional background check via external HttpClient service
             await _verificationService.VerifyApplicantIdentityAsync(user.Email!);
@@ -91,13 +93,11 @@ namespace DriverLicenseApi.Services
                 .Include(a => a.StatusHistories)
                 .AsQueryable();
 
-            // LINQ Filtering
             if (statusFilter.HasValue)
             {
                 query = query.Where(a => a.Status == statusFilter.Value);
             }
 
-            // LINQ Sorting
             query = sortBy?.ToLower() switch
             {
                 "date_asc" => query.OrderBy(a => a.SubmittedDate),
@@ -107,7 +107,6 @@ namespace DriverLicenseApi.Services
 
             var applications = await query.ToListAsync();
 
-            // LINQ Projection
             return applications.Select(a => MapToDto(a, a.User?.FullName ?? "", a.User?.Email ?? "")).ToList();
         }
 

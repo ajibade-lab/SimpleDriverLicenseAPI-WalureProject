@@ -18,7 +18,7 @@ namespace DriverLicenseApi.Data
                 {
                     await roleManager.CreateAsync(new IdentityRole<Guid>(role));
                 }
-            } 
+            }
 
             // Seed default Staff User
             var staffEmail = "staff@license.gov";
